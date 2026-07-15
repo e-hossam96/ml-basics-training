@@ -1,0 +1,21 @@
+[project]
+name = "ml-basics"
+version = "0.1.0"
+description = "ML Basics"
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [{ name = "e-hossam96", email = "ehh.hossam@gmail.com" }]
+dependencies = [
+  "numpy>=2.4.4",
+  "pandas>=3.0.3",
+  "scikit-learn>=1.9.0",
+  "torch>=2.13.0",
+]
+
+[tool.uv.sources]
+torch = { index = "cuda132" }
+
+[[tool.uv.index]]
+name = "cuda132"
+url = "https://download.pytorch.org/whl/cu132"
+explicit = true
