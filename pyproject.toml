@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 authors = [{ name = "e-hossam96", email = "ehh.hossam@gmail.com" }]
 dependencies = [
-  "fastapi[uvicorn]>=0.139.0",
+  "fastapi[standard]>=0.139.0",
   "numpy>=2.4.4",
   "pandas>=3.0.3",
   "pydantic>=2.13.4",
