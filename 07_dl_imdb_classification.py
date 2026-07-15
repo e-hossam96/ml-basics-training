@@ -6,7 +6,7 @@ from collections import Counter
 
 class IMDBSentimentClassificationModel(torch.nn.Module):
     def __init__(
-        self, vocab_size: int, padding_idx: int, embedding_dim: int = 1024
+        self, vocab_size: int, padding_idx: int, embedding_dim: int = 128
     ) -> None:
         super(IMDBSentimentClassificationModel, self).__init__()
         self.embedding = torch.nn.Embedding(
@@ -16,7 +16,9 @@ class IMDBSentimentClassificationModel(torch.nn.Module):
         )
         self.linear_layers = torch.nn.Sequential(
             torch.nn.Linear(in_features=embedding_dim, out_features=embedding_dim * 2),
+            torch.nn.ReLU(),
             torch.nn.Linear(in_features=embedding_dim * 2, out_features=embedding_dim),
+            torch.nn.ReLU(),
             torch.nn.Linear(in_features=embedding_dim, out_features=1),
             torch.nn.Sigmoid(),
         )
@@ -62,9 +64,12 @@ def train_tokenizer(texts: list[str], vocab_size: int = 4096) -> dict[str, int]:
     vocab = {word: idx for idx, (word, _) in enumerate(most_common_words)}
 
     # add special tokens for unknown words and padding
-    vocab["<UNK>"] = len(vocab) - 2
-    vocab["<PAD>"] = len(vocab) - 1
+    vocab["<UNK>"] = len(vocab)
+    vocab["<PAD>"] = len(vocab)
 
+    assert len(vocab) == vocab_size, (
+        f"Vocab size is {len(vocab)}, expected {vocab_size}"
+    )
     return vocab
 
 
@@ -117,8 +122,10 @@ def main():
         model.parameters(), lr=1e-2, momentum=0.9, weight_decay=1e-4
     )
 
+    print(f"Total number of parameters: {sum(p.numel() for p in model.parameters())}")
+
     # training loop
-    batch_size = 64
+    batch_size = 32
     num_epochs = 128
     for epoch in range(num_epochs):
         total_train_loss = 0.0
