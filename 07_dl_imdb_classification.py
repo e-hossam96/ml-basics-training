@@ -1,3 +1,4 @@
+import json
 import torch
 import pandas as pd
 from collections import Counter
@@ -14,13 +15,9 @@ class IMDBSentimentClassificationModel(torch.nn.Module):
             padding_idx=padding_idx,
         )
         self.linear_layers = torch.nn.Sequential(
-            torch.nn.Linear(in_features=embedding_dim, out_features=embedding_dim * 4),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=embedding_dim * 4, out_features=embedding_dim),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=embedding_dim, out_features=embedding_dim // 2),
-            torch.nn.ReLU(),
-            torch.nn.Linear(in_features=embedding_dim // 2, out_features=1),
+            torch.nn.Linear(in_features=embedding_dim, out_features=embedding_dim * 2),
+            torch.nn.Linear(in_features=embedding_dim * 2, out_features=embedding_dim),
+            torch.nn.Linear(in_features=embedding_dim, out_features=1),
             torch.nn.Sigmoid(),
         )
 
@@ -117,12 +114,12 @@ def main():
     ).to(device)
     criterion = torch.nn.BCELoss().to(device)
     optimizer = torch.optim.SGD(
-        model.parameters(), lr=2e-2, momentum=0.9, weight_decay=1e-4
+        model.parameters(), lr=1e-2, momentum=0.9, weight_decay=1e-4
     )
 
     # training loop
     batch_size = 64
-    num_epochs = 64
+    num_epochs = 128
     for epoch in range(num_epochs):
         total_train_loss = 0.0
         for i in range(0, X_train_tensor.size(0), batch_size):
@@ -156,7 +153,21 @@ def main():
     print(f"Test Accuracy: {accuracy:.4f}")
 
     torch.save(model.state_dict(), "models/imdb_classifier.pth")
+    with open("models/imdb_classifier_params.json", "w") as f:
+        json.dump(
+            {
+                "vocab_size": vocab_size,
+                "padding_idx": vocab["<PAD>"],
+                "unk_idx": vocab["<UNK>"],
+            },
+            f,
+        )
+    with open("models/imdb_classifier_vocab.json", "w") as f:
+        json.dump(vocab, f)
+
     print("Model saved to: 'models/imdb_classifier.pth'")
+    print("Model params saved to: 'models/imdb_classifier_params.json'")
+    print("Model vocab saved to: 'models/imdb_classifier_vocab.json'")
 
 
 if __name__ == "__main__":
